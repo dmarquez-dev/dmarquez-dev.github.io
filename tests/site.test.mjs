@@ -13,12 +13,7 @@ const read = (file) => {
   return readFileSync(path, 'utf8');
 };
 
-const ALLOWED_HOSTS = [
-  'github.com',
-  'fonts.googleapis.com',
-  'fonts.gstatic.com',
-  'dmarquez-dev.github.io',
-];
+const ALLOWED_HOSTS = ['github.com', 'dmarquez-dev.github.io'];
 
 const REPOS = ['dungeon-master', 'orcastrate', 'dm-auth'];
 
@@ -60,9 +55,21 @@ function blockAfter(source, header) {
 
 // ---------- index.html ----------
 
-test('has exactly three project cards', () => {
-  const html = read('index.html');
-  assert.equal((html.match(/<article class="project[ "]/g) || []).length, 3);
+/** Each <article class="project ..."> block, in page order. */
+const cards = (html) => html.match(/<article class="project[ "][\s\S]*?<\/article>/g) || [];
+
+test('every project card is complete', () => {
+  const list = cards(read('index.html'));
+  assert.ok(list.length >= 1, 'expected at least one project card');
+  for (const card of list) {
+    const name = (card.match(/<h3 class="project__name">([^<]+)</) || [])[1] || '(unnamed)';
+    for (const [part, re] of [
+      ['name', /<h3 class="project__name">[^<]+</],
+      ['status badge', /<span class="badge">[^<]+</],
+      ['summary', /<p class="project__summary">[^<]+/],
+      ['source link', /<a class="link" href="https:\/\/github\.com\/dmarquez-dev\/[^"]+"/],
+    ]) assert.match(card, re, `${name}: missing ${part}`);
+  }
 });
 
 test('each card links to its repo', () => {
@@ -89,6 +96,23 @@ test('images have alt', () => {
   for (const img of html.match(/<img\b[^>]*>/g) || []) assert.match(img, /\salt="/, img);
 });
 
+test('decorative svgs are hidden from screen readers', () => {
+  const html = read('index.html');
+  assert.match(html, /<div class="hero__art" aria-hidden="true">/);
+  for (const svg of html.match(/<svg\b[^>]*>/g) || []) {
+    if (/class="motif/.test(svg)) continue; // inside the aria-hidden .hero__art
+    assert.match(svg, /aria-hidden="true"/, svg);
+  }
+});
+
+test('screenshot goes after the name panel so the name is read first', () => {
+  for (const card of cards(read('index.html'))) {
+    const img = card.indexOf('<img');
+    if (img !== -1) assert.ok(img > card.indexOf('project__overlay'), 'img must follow .project__overlay');
+  }
+  assert.match(read('README.md'), /after the name panel/);
+});
+
 test('has sharing meta', () => {
   const html = read('index.html');
   for (const needle of [
@@ -98,6 +122,12 @@ test('has sharing meta', () => {
     'property="og:image"',
     'name="twitter:card"',
     '<link rel="icon"',
+    '<link rel="canonical" href="https://dmarquez-dev.github.io/">',
+    '<meta name="color-scheme" content="light dark">',
+    'property="og:site_name"',
+    'property="og:image:alt"',
+    'property="og:image:width" content="1200"',
+    'property="og:image:height" content="630"',
   ]) {
     assert.ok(html.includes(needle), `missing ${needle}`);
   }
@@ -113,12 +143,22 @@ test('only allowed external hosts', () => {
 
 test('contact is email only, in hero and footer', () => {
   const html = read('index.html');
-  for (const navClass of ['hero__links', 'site-footer__links']) {
-    const nav = html.match(new RegExp(`<nav class="${navClass}"[^>]*>([\\s\\S]*?)</nav>`));
-    assert.ok(nav, `missing nav.${navClass}`);
-    const hrefs = [...nav[1].matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(hrefs, ['mailto:dmarquez.development@gmail.com'], `nav.${navClass} links`);
+  for (const cls of ['hero__links', 'site-footer__links']) {
+    const block = html.match(new RegExp(`<(div|p) class="${cls}"[^>]*>([\\s\\S]*?)</\\1>`));
+    assert.ok(block, `missing .${cls}`);
+    const hrefs = [...block[2].matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(hrefs, ['mailto:dmarquez.development@gmail.com'], `.${cls} links`);
   }
+  assert.doesNotMatch(html, /<nav\b/, 'a single mailto link is not a navigation landmark');
+});
+
+test('font is self-hosted', () => {
+  const html = read('index.html');
+  assert.doesNotMatch(html, /fonts\.(googleapis|gstatic)\.com/);
+  assert.match(html, /<link rel="preload" href="assets\/fonts\/schibsted-grotesk-latin\.woff2" as="font" type="font\/woff2" crossorigin>/);
+  assert.match(read('styles.css'), /@font-face\s*\{[^}]*url\("assets\/fonts\/schibsted-grotesk-latin\.woff2"\)/);
+  read('assets/fonts/schibsted-grotesk-latin.woff2');
+  read('assets/fonts/OFL.txt');
 });
 
 test('no placeholders remain', () => {
@@ -194,7 +234,46 @@ test('theme toggle names its state', () => {
   assert.match(button[0], /title="/);
 });
 
+test('layout uses the full width on large screens', () => {
+  const css = read('styles.css');
+  const max = Number((css.match(/--max:\s*(\d+)px/) || [])[1]);
+  assert.ok(max >= 1920, `--max is ${max}px; a 1920px screen would get wide empty gutters`);
+  assert.match(css, /--gutter:\s*clamp\(/, 'gutter should scale with the viewport');
+});
+
+test('motion durations stay within 400ms', () => {
+  const css = read('styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const [, ms] of css.matchAll(/(\d+)ms/g)) assert.ok(Number(ms) <= 400, `${ms}ms exceeds 400ms`);
+});
+
+test('overlay hover does not animate layout', () => {
+  const css = read('styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  const hover = rules.filter(([, sel]) => /:(hover|focus-within)/.test(sel) && sel.includes('.project__overlay'));
+  assert.ok(hover.length > 0, 'expected an overlay hover state');
+  for (const [, sel, body] of hover) assert.doesNotMatch(body, /padding|width|margin/, `${sel.trim()} animates layout`);
+  const base = rules.find(([, sel]) => sel.trim() === '.project__overlay');
+  assert.doesNotMatch(base[2], /transition:[^;]*padding/);
+});
+
 // ---------- main.js ----------
+
+test('main.js sets every class the CSS waits for', () => {
+  const js = read('main.js');
+  const css = read('styles.css');
+  for (const cls of ['reveal-ready', 'is-visible', 'is-settled']) {
+    assert.ok(css.includes(`.${cls}`), `styles.css no longer uses .${cls}`);
+    assert.ok(js.includes(`classList.add('${cls}')`), `main.js never adds .${cls}`);
+  }
+});
+
+test('reveal stagger resets so hover is not delayed', () => {
+  assert.ok(read('main.js').includes(`setProperty('--i', '0')`), 'main.js should clear --i after the reveal');
+});
+
+test('slow main.js does not re-hide cards the fallback already showed', () => {
+  assert.match(read('main.js'), /performance\.now\(\)/, 'main.js should detect a late start');
+});
 
 test('storage access is guarded', () => {
   assertStorageGuarded(read('main.js'), 'main.js');

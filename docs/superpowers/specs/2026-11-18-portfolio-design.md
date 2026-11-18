@@ -85,7 +85,7 @@ Copy is the builder's to polish; facts above come from the repos and the user.
 
 ## Visual & technical decisions (Claude's calls)
 
-- **Look:** neutral palette with a single accent colour; generous whitespace; one modern sans-serif
+- **Look:** neutral palette; *amended 2026-11-18:* instead of one accent colour, each project owns one hue, used only in its motif and name panel, so colour always means "this project"; generous whitespace; one modern sans-serif
   (self-contained or Google Fonts). Distinctive but restrained — no template feel.
 - **Motion (user requirement):** the site must not feel static. Wherever elements layer or overlap
   (e.g. a geometric overlay carrying the project name over a card's screenshot), they get soft

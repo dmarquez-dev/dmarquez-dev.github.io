@@ -4,13 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>David Marquez — Software Engineer</title>
-  <meta name="description" content="David Marquez is a full-stack software engineer working primarily in .NET, TypeScript and Azure. Projects: Dungeon Master, Orcastrate and DM Auth.">
+  <meta name="description" content="David Marquez, software engineer. Full-stack developer working primarily in .NET, TypeScript and Azure. Projects: Dungeon Master, Orcastrate and DM Auth.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="canonical" href="https://dmarquez-dev.github.io/">
 
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="David Marquez">
   <meta property="og:url" content="https://dmarquez-dev.github.io/">
   <meta property="og:title" content="David Marquez — Software Engineer">
   <meta property="og:description" content="Full-stack developer working primarily in .NET, TypeScript and Azure. Projects: Dungeon Master, Orcastrate and DM Auth.">
   <meta property="og:image" content="https://dmarquez-dev.github.io/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="David Marquez, Software Engineer: full-stack in .NET, TypeScript and Azure.">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -27,9 +33,7 @@
     })();
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap">
+  <link rel="preload" href="assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <script src="main.js" defer></script>
 </head>
@@ -47,9 +51,9 @@
         <h1 class="hero__name">David Marquez</h1>
         <p class="hero__role">Software Engineer</p>
         <p class="hero__pitch">I'm a full-stack developer working primarily in .NET, TypeScript and Azure.</p>
-        <nav class="hero__links" aria-label="Contact">
+        <div class="hero__links">
           <a class="btn btn--primary" href="mailto:dmarquez.development@gmail.com">Email me</a>
-        </nav>
+        </div>
         <p class="hero__email">dmarquez.development@gmail.com</p>
       </div>
 
@@ -87,6 +91,7 @@
         <div class="project-grid">
 
           <!-- Project card. To add a project, copy one <article> and change its content.
+               A screenshot image goes inside .project__media AFTER .project__overlay.
                Add Download / Live demo links to .project__links only once they exist. -->
           <article class="project project--dungeon" data-reveal>
             <div class="project__media">
@@ -203,9 +208,9 @@
   <footer class="site-footer">
     <div class="container site-footer__inner">
       <p>© 2026 David Marquez</p>
-      <nav class="site-footer__links" aria-label="Contact (footer)">
+      <p class="site-footer__links">
         <a class="link" href="mailto:dmarquez.development@gmail.com">dmarquez.development@gmail.com</a>
-      </nav>
+      </p>
     </div>
   </footer>
 </body>
