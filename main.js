@@ -6,8 +6,6 @@
   var STORAGE_KEY = 'theme';
   var darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-  root.classList.add('js');
-
   // ---------- Theme ----------
 
   function effectiveTheme() {
@@ -42,22 +40,34 @@
   // ---------- Reveal ----------
 
   var items = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
-  items.forEach(function (el, i) { el.style.setProperty('--i', String(i)); });
 
-  function show(el) { el.classList.add('is-visible'); }
+  // Reveal with a short stagger inside each batch that enters together, then
+  // clear the stagger so later hovers respond immediately.
+  var STAGGER_MS = 80;
+  var REVEAL_MS = 400;
 
-  if ('IntersectionObserver' in window) {
+  function show(el, order) {
+    el.style.setProperty('--i', String(order));
+    el.classList.add('is-visible');
+    setTimeout(function () { el.style.setProperty('--i', '0'); }, REVEAL_MS + order * STAGGER_MS);
+  }
+
+  // The CSS fallback shows everything after 2.5s if this script hasn't run.
+  // Starting later than that, the cards are already on screen: keep them there.
+  var FALLBACK_MS = 2400;
+  var startedLate = window.performance && performance.now() > FALLBACK_MS;
+
+  if (startedLate || !('IntersectionObserver' in window)) {
+    items.forEach(function (el) { show(el, 0); });
+  } else {
     var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          show(entry.target);
+      entries.filter(function (entry) { return entry.isIntersecting; })
+        .forEach(function (entry, order) {
+          show(entry.target, order);
           observer.unobserve(entry.target);
-        }
-      });
+        });
     }, { threshold: 0.15 });
     items.forEach(function (el) { observer.observe(el); });
-  } else {
-    items.forEach(show);
   }
 
   // Tell the CSS fallback that reveals are handled here.

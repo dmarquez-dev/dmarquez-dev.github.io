@@ -1,3 +1,13 @@
+/* Schibsted Grotesk, self-hosted (SIL Open Font License: assets/fonts/OFL.txt).
+   One variable file covers every weight used on the page. */
+@font-face {
+  font-family: "Schibsted Grotesk";
+  src: url("assets/fonts/schibsted-grotesk-latin.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ==========================================================================
    Tokens
    Each project owns one hue. It appears in that project's geometric motif and
@@ -29,8 +39,10 @@
   --fast: 180ms;
   --slow: 380ms;
   --radius: 14px;
-  --gutter: 16px;
-  --max: 1120px;
+  /* 16px on phones, growing with the screen to 80px; content is capped
+     only on ultrawide screens. */
+  --gutter: clamp(16px, 4vw, 80px);
+  --max: 2200px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -99,10 +111,6 @@ a { color: inherit; }
   padding-inline: var(--gutter);
 }
 
-@media (min-width: 720px) {
-  :root { --gutter: 32px; }
-}
-
 .visually-hidden {
   position: absolute !important;
   width: 1px; height: 1px;
@@ -139,7 +147,7 @@ a { color: inherit; }
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid var(--rule);
+  border: 1px solid color-mix(in srgb, var(--ink) 40%, var(--bg));
   border-radius: 50%;
   background: var(--surface);
   color: var(--ink);
@@ -167,7 +175,7 @@ a { color: inherit; }
 }
 
 .hero__name {
-  font-size: clamp(3rem, 8.5vw, 6rem);
+  font-size: clamp(3rem, 7vw, 8rem);
   font-weight: 800;
   line-height: .92;
   letter-spacing: -.035em;
@@ -184,7 +192,7 @@ a { color: inherit; }
   margin-top: 14px;
   max-width: 34em;
   color: var(--muted);
-  font-size: 1.125rem;
+  font-size: clamp(1.125rem, 1vw + .5rem, 1.375rem);
 }
 
 .hero__links {
@@ -225,14 +233,14 @@ a { color: inherit; }
   justify-self: start;
 }
 @media (min-width: 880px) {
-  .hero__art { width: min(100%, 420px); justify-self: center; }
+  .hero__art { width: min(100%, clamp(320px, 28vw, 560px)); justify-self: center; }
 }
 
 .motif {
   position: absolute;
   width: 62%;
   height: 62%;
-  transition: transform 600ms var(--ease);
+  transition: transform 400ms var(--ease);
 }
 .motif--grid  { left: 0;   top: 0;   color: var(--dungeon-line); }
 .motif--lanes { right: 0;  top: 14%; fill: var(--orca-line); opacity: .85; }
@@ -319,7 +327,7 @@ a { color: inherit; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 600ms var(--ease);
+  transition: transform 400ms var(--ease);
 }
 .project__pattern { opacity: .75; }
 
@@ -332,8 +340,6 @@ a { color: inherit; }
 }
 .project__media:has(> img) .project__name { font-size: 1.125rem; }
 .project__media:has(> img) .badge { margin-top: 2px; font-size: .75rem; }
-.project:hover .project__media:has(> img) .project__overlay,
-.project:focus-within .project__media:has(> img) .project__overlay { padding-right: 44px; }
 
 .project:hover .project__media > img,
 .project:focus-within .project__media > img { transform: scale(1.035); }
@@ -349,14 +355,15 @@ a { color: inherit; }
   padding: 14px 44px 14px 20px;
   background: var(--hue);
   color: #fff;
+  z-index: 1;
   clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 100%, 0 100%);
-  transition: padding var(--slow) var(--ease), clip-path var(--slow) var(--ease);
+  transition: clip-path var(--slow) var(--ease);
 }
 
+/* On hover the angled edge swings upright: shape only, no layout change. */
 .project:hover .project__overlay,
 .project:focus-within .project__overlay {
-  padding-right: 60px;
-  clip-path: polygon(0 0, calc(100% - 40px) 0, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 100%, 0 100%);
 }
 
 .project__name {
@@ -455,7 +462,7 @@ a { color: inherit; }
 .project .link:hover { text-decoration-color: var(--line); }
 
 /* ==========================================================================
-   About
+   Skills
    ========================================================================== */
 
 .section--skills { border-top: 1px solid var(--rule); }
@@ -471,6 +478,7 @@ a { color: inherit; }
 .skills {
   display: grid;
   gap: 0;
+  max-width: 64rem;
 }
 .skills > div {
   display: grid;
@@ -501,7 +509,7 @@ a { color: inherit; }
   justify-content: space-between;
   gap: 12px 24px;
 }
-.site-footer nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.site-footer__links { display: flex; flex-wrap: wrap; gap: 20px; }
 
 /* ==========================================================================
    Scroll reveal (only when JS runs; content is visible without it)
@@ -522,8 +530,8 @@ a { color: inherit; }
   opacity: 1;
   transform: none;
   transition:
-    opacity 500ms var(--ease) calc(var(--i, 0) * 80ms),
-    transform 500ms var(--ease) calc(var(--i, 0) * 80ms),
+    opacity 400ms var(--ease) calc(var(--i, 0) * 80ms),
+    transform 400ms var(--ease) calc(var(--i, 0) * 80ms),
     border-color var(--slow) var(--ease),
     box-shadow var(--slow) var(--ease);
 }
