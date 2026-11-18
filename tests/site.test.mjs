@@ -15,8 +15,6 @@ const read = (file) => {
 
 const ALLOWED_HOSTS = [
   'github.com',
-  'www.linkedin.com',
-  'linkedin.com',
   'fonts.googleapis.com',
   'fonts.gstatic.com',
   'dmarquez-dev.github.io',
@@ -110,6 +108,16 @@ test('only allowed external hosts', () => {
   for (const [, url] of html.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)) {
     const host = new URL(url).hostname;
     assert.ok(ALLOWED_HOSTS.includes(host), `disallowed host ${host} in ${url}`);
+  }
+});
+
+test('contact is email only, in hero and footer', () => {
+  const html = read('index.html');
+  for (const navClass of ['hero__links', 'site-footer__links']) {
+    const nav = html.match(new RegExp(`<nav class="${navClass}"[^>]*>([\\s\\S]*?)</nav>`));
+    assert.ok(nav, `missing nav.${navClass}`);
+    const hrefs = [...nav[1].matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(hrefs, ['mailto:dmarquez.development@gmail.com'], `nav.${navClass} links`);
   }
 });
 
