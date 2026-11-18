@@ -125,7 +125,7 @@ test('inline head script guards storage', () => {
 // ---------- styles.css ----------
 
 test('reveal hidden state is gated on html.js', () => {
-  const css = read('styles.css');
+  const css = read('styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
   const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
   const hiding = rules.filter(([, sel, body]) => sel.includes('[data-reveal]') && /opacity:\s*0(?![.\d])/.test(body));
   assert.ok(hiding.length > 0, 'expected a hidden start state for [data-reveal]');
@@ -134,6 +134,19 @@ test('reveal hidden state is gated on html.js', () => {
       assert.match(part.trim(), /^\.js\s/, `selector "${part.trim()}" hides content without JS`);
     }
   }
+});
+
+test('reveal falls back to visible if main.js never runs', () => {
+  const css = read('styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rule = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find(
+    ([, sel, body]) => sel.includes('[data-reveal]') && sel.includes(':not(.is-visible)') && /animation:/.test(body),
+  );
+  assert.ok(rule, 'expected a delayed CSS animation that reveals [data-reveal] without main.js');
+  const name = rule[2].match(/animation:\s*([\w-]+)/)[1];
+  const keyframes = blockAfter(css, `@keyframes ${name}`);
+  assert.ok(keyframes && /opacity:\s*1/.test(keyframes), `@keyframes ${name} should end at opacity: 1`);
+  const reduced = blockAfter(css, '@media (prefers-reduced-motion: reduce)');
+  assert.match(reduced, /\[data-reveal\][^{]*\{[^}]*opacity:\s*1/, 'reduced motion must not leave cards hidden');
 });
 
 test('reduced-motion block removes transforms', () => {
