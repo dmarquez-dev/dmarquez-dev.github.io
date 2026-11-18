@@ -17,6 +17,8 @@ Plain HTML, CSS and a little JavaScript. There is no build step: what's in the r
    and `--line` (motif) for it in `styles.css`, next to `.project--dungeon`.
 3. Swap the inline SVG pattern for one that suits the project, or add a screenshot as the first child of
    `.project__media`: `<img src="assets/screens/<name>.webp" alt="..." width="1280" height="800" loading="lazy">`.
+   A screenshot replaces the pattern (the CSS hides the SVG) and shrinks the name panel to a compact strip;
+   you can delete the SVG once the screenshot is in.
 4. Only add a **Download** or **Live demo** link to `.project__links` once it really exists.
 5. Update the card count in `tests/site.test.mjs` (`has exactly three project cards`).
 

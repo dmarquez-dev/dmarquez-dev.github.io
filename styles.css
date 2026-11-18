@@ -149,6 +149,8 @@ a { color: inherit; }
 .theme-toggle svg { width: 20px; height: 20px; fill: currentColor; }
 .theme-toggle:hover { border-color: var(--muted); }
 .theme-toggle[aria-pressed="true"] { transform: rotate(180deg); }
+/* The toggle only works once main.js runs; until then it isn't offered. */
+:root:not(.reveal-ready) .theme-toggle { visibility: hidden; }
 
 .hero__inner {
   display: grid;
@@ -320,6 +322,18 @@ a { color: inherit; }
   transition: transform 600ms var(--ease);
 }
 .project__pattern { opacity: .75; }
+
+/* With a screenshot: the image replaces the pattern, and the name panel
+   shrinks to a compact strip so the screenshot stays readable. */
+.project__media:has(> img) .project__pattern { display: none; }
+.project__media:has(> img) .project__overlay {
+  max-width: min(78%, 300px);
+  padding: 8px 32px 8px 14px;
+}
+.project__media:has(> img) .project__name { font-size: 1.125rem; }
+.project__media:has(> img) .badge { margin-top: 2px; font-size: .75rem; }
+.project:hover .project__media:has(> img) .project__overlay,
+.project:focus-within .project__media:has(> img) .project__overlay { padding-right: 44px; }
 
 .project:hover .project__media > img,
 .project:focus-within .project__media > img { transform: scale(1.035); }
@@ -517,6 +531,12 @@ a { color: inherit; }
 .js .project[data-reveal].is-visible:focus-within {
   transform: translateY(-4px);
   transition-delay: 0ms;
+}
+
+/* Printing / Save as PDF: every card, whether or not it was scrolled to. */
+@media print {
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .theme-toggle, .skip-link { display: none; }
 }
 
 /* ==========================================================================

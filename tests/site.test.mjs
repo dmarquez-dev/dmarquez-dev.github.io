@@ -164,6 +164,36 @@ test('reduced-motion block removes transforms', () => {
   assert.match(block, /transform:\s*none/);
 });
 
+test('a screenshot replaces the pattern and compacts the overlay', () => {
+  const css = read('styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  const hidesPattern = rules.some(([, sel, body]) => sel.includes(':has(> img)') && sel.includes('.project__pattern') && /display:\s*none/.test(body));
+  const compacts = rules.some(([, sel, body]) => sel.includes(':has(> img)') && sel.includes('.project__overlay') && /max-width:/.test(body));
+  assert.ok(hidesPattern, 'cards with an <img> must hide the SVG pattern');
+  assert.ok(compacts, 'cards with an <img> must use a narrower overlay');
+});
+
+test('printing shows every card', () => {
+  const css = read('styles.css');
+  const block = blockAfter(css, '@media print');
+  assert.ok(block, 'missing @media print block');
+  assert.match(block, /\[data-reveal\][^{]*\{[^}]*opacity:\s*1\s*!important/);
+});
+
+test('theme toggle stays hidden until main.js runs', () => {
+  const css = read('styles.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.match(css, /:not\(\.reveal-ready\)\s+\.theme-toggle\s*\{[^}]*visibility:\s*hidden/);
+});
+
+test('theme toggle names its state', () => {
+  const html = read('index.html');
+  const button = html.match(/<button id="theme-toggle"[^>]*>/);
+  assert.ok(button, 'missing #theme-toggle');
+  assert.match(button[0], /aria-label="Dark theme"/);
+  assert.match(button[0], /aria-pressed="(true|false)"/);
+  assert.match(button[0], /title="/);
+});
+
 // ---------- main.js ----------
 
 test('storage access is guarded', () => {
