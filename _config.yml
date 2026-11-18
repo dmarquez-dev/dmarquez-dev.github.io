@@ -1,0 +1,7 @@
+# GitHub Pages runs Jekyll; plain HTML passes through unchanged.
+# Keep repository tooling and docs off the published site.
+exclude:
+  - docs
+  - tests
+  - package.json
+  - README.md
